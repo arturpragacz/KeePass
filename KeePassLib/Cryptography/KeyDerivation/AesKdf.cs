@@ -57,6 +57,11 @@ namespace KeePassLib.Cryptography.KeyDerivation
 			get { return "AES-KDF"; }
 		}
 
+		public override byte[] GetSeed(KdfParameters p)
+		{
+			return p.GetByteArray(ParamSeed);
+		}
+
 		public AesKdf()
 		{
 		}
