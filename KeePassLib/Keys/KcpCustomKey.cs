@@ -27,10 +27,9 @@ using KeePassLib.Security;
 
 namespace KeePassLib.Keys
 {
-	public sealed class KcpCustomKey : IUserKey
+	public abstract class KcpCustomKey : IUserKey
 	{
 		private readonly string m_strName;
-		private ProtectedBinary m_pbKey;
 
 		/// <summary>
 		/// Name of the provider that generated the custom key.
@@ -40,17 +39,28 @@ namespace KeePassLib.Keys
 			get { return m_strName; }
 		}
 
-		public ProtectedBinary KeyData
+		public abstract ProtectedBinary KeyData(PwDatabase pd);
+
+		public KcpCustomKey(string strName)
 		{
-			get { return m_pbKey; }
+			if (strName == null) { Debug.Assert(false); throw new ArgumentNullException("strName"); }
+			m_strName = strName;
 		}
 
-		public KcpCustomKey(string strName, byte[] pbKeyData, bool bPerformHash)
-		{
-			Debug.Assert(strName != null); if(strName == null) throw new ArgumentNullException("strName");
-			Debug.Assert(pbKeyData != null); if(pbKeyData == null) throw new ArgumentNullException("pbKeyData");
+	}
 
-			m_strName = strName;
+	public class KcpSimpleCustomKey : KcpCustomKey
+	{
+		private ProtectedBinary m_pbKey;
+
+		public override ProtectedBinary KeyData(PwDatabase pd)
+		{
+			return m_pbKey;
+		}
+
+		public KcpSimpleCustomKey(string strName, byte[] pbKeyData, bool bPerformHash) : base(strName)
+		{
+			Debug.Assert(pbKeyData != null); if(pbKeyData == null) throw new ArgumentNullException("pbKeyData");
 
 			if(bPerformHash)
 			{

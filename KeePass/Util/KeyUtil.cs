@@ -60,7 +60,6 @@ namespace KeePass.Util
 				KeyProvider kp = Program.KeyProviderPool.Get(strKeyFile);
 				if(kp != null)
 				{
-					byte[] pbKey = null;
 					try
 					{
 						if(bSecureDesktop && !kp.SecureDesktopCompatible)
@@ -72,18 +71,15 @@ namespace KeePass.Util
 						KeyProviderQueryContext ctx = new KeyProviderQueryContext(
 							ioc, bNewKey, bSecureDesktop);
 
-						pbKey = kp.GetKey(ctx);
+						IUserKey uKey = kp.GetCustomKey(ctx);
 
-						if((pbKey != null) && (pbKey.Length != 0))
-							ck.AddUserKey(new KcpCustomKey(strKeyFile, pbKey,
-								!kp.DirectKey));
+						if(uKey != null) ck.AddUserKey(uKey);
 						else return null; // Provider has shown error message
 					}
 					catch(Exception ex)
 					{
 						throw new Exception(strKeyFile + strNP + ex.Message);
 					}
-					finally { if(pbKey != null) MemUtil.ZeroByteArray(pbKey); }
 				}
 				else // Key file
 				{
@@ -319,7 +315,7 @@ namespace KeePass.Util
 			if((dr != DialogResult.OK) || (r == null)) return false;
 
 			CompositeKey ck = r.CompositeKey;
-			bool bEqual = ck.EqualsValue(pd.MasterKey);
+			bool bEqual = ck.EqualsValue(pd, pd.MasterKey);
 
 			if(!bEqual && bFailWithUI)
 				MessageService.ShowWarning(KLRes.InvalidCompositeKey,

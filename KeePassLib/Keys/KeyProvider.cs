@@ -19,9 +19,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 using KeePassLib.Serialization;
+using KeePassLib.Utility;
 
 namespace KeePassLib.Keys
 {
@@ -126,7 +128,21 @@ namespace KeePassLib.Keys
 			get { return false; }
 		}
 
-		public abstract byte[] GetKey(KeyProviderQueryContext ctx);
+		public virtual byte[] GetKey(KeyProviderQueryContext ctx) {
+			Debug.Assert(false);
+			throw new NotImplementedException("Implement GetCustomKey or GetKey.");
+		}
+
+		public virtual IUserKey GetCustomKey(KeyProviderQueryContext ctx) {
+			byte[] pbKey = GetKey(ctx);
+			IUserKey uKey = null;
+			if((pbKey != null) && (pbKey.Length != 0))
+			{
+				uKey = new KcpSimpleCustomKey(Name, pbKey, !DirectKey);
+				MemUtil.ZeroByteArray(pbKey);
+			}
+			return uKey;
+		}
 	}
 
 #if DEBUG

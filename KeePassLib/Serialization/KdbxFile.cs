@@ -417,7 +417,7 @@ namespace KeePassLib.Serialization
 				Debug.Assert(m_pwDatabase != null);
 				Debug.Assert(m_pwDatabase.MasterKey != null);
 				ProtectedBinary pbinUser = m_pwDatabase.MasterKey.GenerateKey32Ex(
-					m_pwDatabase.KdfParameters, m_slLogger);
+					m_pwDatabase, m_slLogger);
 				Debug.Assert(pbinUser != null);
 				if(pbinUser == null)
 					throw new SecurityException(KLRes.InvalidCompositeKey);

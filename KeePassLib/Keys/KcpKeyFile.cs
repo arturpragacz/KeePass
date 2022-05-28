@@ -41,9 +41,9 @@ namespace KeePassLib.Keys
 			get { return m_strPath; }
 		}
 
-		public ProtectedBinary KeyData
+		public ProtectedBinary KeyData(PwDatabase pd)
 		{
-			get { return m_pbKeyData; }
+			return m_pbKeyData;
 		}
 
 		public KcpKeyFile(string strKeyFile) :
