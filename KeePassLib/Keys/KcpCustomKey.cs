@@ -39,10 +39,7 @@ namespace KeePassLib.Keys
 			get { return m_strName; }
 		}
 
-		public abstract ProtectedBinary KeyData
-		{
-			get;
-		}
+		public abstract ProtectedBinary KeyData(PwDatabase pd);
 
 		public KcpCustomKey(string strName)
 		{
@@ -56,9 +53,9 @@ namespace KeePassLib.Keys
 	{
 		private ProtectedBinary m_pbKey;
 
-		public override ProtectedBinary KeyData
+		public override ProtectedBinary KeyData(PwDatabase pd)
 		{
-			get { return m_pbKey; }
+			return m_pbKey;
 		}
 
 		public KcpSimpleCustomKey(string strName, byte[] pbKeyData, bool bPerformHash) : base(strName)

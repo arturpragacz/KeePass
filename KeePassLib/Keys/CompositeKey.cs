@@ -165,7 +165,7 @@ namespace KeePassLib.Keys
 		/// Creates the composite key from the supplied user key sources (password,
 		/// key file, user account, computer ID, etc.).
 		/// </summary>
-		private byte[] CreateRawCompositeKey32()
+		private byte[] CreateRawCompositeKey32(PwDatabase pd)
 		{
 			ValidateUserKeys();
 
@@ -173,7 +173,7 @@ namespace KeePassLib.Keys
 			int cbData = 0;
 			foreach(IUserKey pKey in m_vUserKeys)
 			{
-				ProtectedBinary b = pKey.KeyData;
+				ProtectedBinary b = pKey.KeyData(pd);
 				if(b != null)
 				{
 					byte[] pbKeyData = b.ReadData();
@@ -197,15 +197,15 @@ namespace KeePassLib.Keys
 			return pbHash;
 		}
 
-		public bool EqualsValue(CompositeKey ckOther)
+		public bool EqualsValue(PwDatabase pd, CompositeKey ckOther)
 		{
 			if(ckOther == null) throw new ArgumentNullException("ckOther");
 
 			bool bEqual;
-			byte[] pbThis = CreateRawCompositeKey32();
+			byte[] pbThis = CreateRawCompositeKey32(pd);
 			try
 			{
-				byte[] pbOther = ckOther.CreateRawCompositeKey32();
+				byte[] pbOther = ckOther.CreateRawCompositeKey32(pd);
 				bEqual = MemUtil.ArraysEqual(pbThis, pbOther);
 				MemUtil.ZeroByteArray(pbOther);
 			}
@@ -214,45 +214,29 @@ namespace KeePassLib.Keys
 			return bEqual;
 		}
 
-		[Obsolete]
-		public ProtectedBinary GenerateKey32(byte[] pbKeySeed32, ulong uNumRounds)
-		{
-			Debug.Assert(pbKeySeed32 != null);
-			if(pbKeySeed32 == null) throw new ArgumentNullException("pbKeySeed32");
-			Debug.Assert(pbKeySeed32.Length == 32);
-			if(pbKeySeed32.Length != 32) throw new ArgumentException("pbKeySeed32");
-
-			AesKdf kdf = new AesKdf();
-			KdfParameters p = kdf.GetDefaultParameters();
-			p.SetUInt64(AesKdf.ParamRounds, uNumRounds);
-			p.SetByteArray(AesKdf.ParamSeed, pbKeySeed32);
-
-			return GenerateKey32(p);
-		}
-
 		/// <summary>
 		/// Generate a 32-byte (256-bit) key from the composite key.
 		/// </summary>
-		public ProtectedBinary GenerateKey32(KdfParameters p)
+		public ProtectedBinary GenerateKey32(PwDatabase pd)
 		{
-			if(p == null) { Debug.Assert(false); throw new ArgumentNullException("p"); }
+			if(pd.KdfParameters == null) { Debug.Assert(false); throw new ArgumentException("pd.KdfParameters"); }
 
 			byte[] pbRaw32 = null, pbTrf32 = null;
 			ProtectedBinary pbRet = null;
 
 			try
 			{
-				pbRaw32 = CreateRawCompositeKey32();
+				pbRaw32 = CreateRawCompositeKey32(pd);
 				if((pbRaw32 == null) || (pbRaw32.Length != 32))
 					{ Debug.Assert(false); return null; }
 
-				KdfEngine kdf = KdfPool.Get(p.KdfUuid);
+				KdfEngine kdf = KdfPool.Get(pd.KdfParameters.KdfUuid);
 				if(kdf == null) // CryptographicExceptions are translated to "file corrupted"
 					throw new Exception(KLRes.UnknownKdf + MessageService.NewParagraph +
 						KLRes.FileNewVerOrPlgReq + MessageService.NewParagraph +
-						"UUID: " + p.KdfUuid.ToHexString() + ".");
+						"UUID: " + pd.KdfParameters.KdfUuid.ToHexString() + ".");
 
-				pbTrf32 = kdf.Transform(pbRaw32, p);
+				pbTrf32 = kdf.Transform(pbRaw32, pd.KdfParameters);
 				if(pbTrf32 == null) { Debug.Assert(false); return null; }
 				if(pbTrf32.Length != 32)
 				{
@@ -277,9 +261,9 @@ namespace KeePassLib.Keys
 			public volatile string Error = null;
 		}
 
-		internal ProtectedBinary GenerateKey32Ex(KdfParameters p, IStatusLogger sl)
+		internal ProtectedBinary GenerateKey32Ex(PwDatabase pd, IStatusLogger sl)
 		{
-			if(sl == null) return GenerateKey32(p);
+			if(sl == null) return GenerateKey32(pd);
 
 			CkGkTaskInfo ti = new CkGkTaskInfo();
 
@@ -287,7 +271,7 @@ namespace KeePassLib.Keys
 			{
 				if(ti == null) { Debug.Assert(false); return; }
 
-				try { ti.Key = GenerateKey32(p); }
+				try { ti.Key = GenerateKey32(pd); }
 				catch(ThreadAbortException exAbort)
 				{
 					ti.Error = ((exAbort != null) ? exAbort.Message : null);

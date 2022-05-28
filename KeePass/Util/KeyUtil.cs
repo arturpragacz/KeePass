@@ -315,7 +315,7 @@ namespace KeePass.Util
 			if((dr != DialogResult.OK) || (r == null)) return false;
 
 			CompositeKey ck = r.CompositeKey;
-			bool bEqual = ck.EqualsValue(pd.MasterKey);
+			bool bEqual = ck.EqualsValue(pd, pd.MasterKey);
 
 			if(!bEqual && bFailWithUI)
 				MessageService.ShowWarning(KLRes.InvalidCompositeKey,

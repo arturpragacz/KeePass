@@ -45,13 +45,13 @@ namespace KeePassLib.Keys
 		}
 
 		/// <summary>
-		/// Get key data. Querying this property is fast (it returns a
+		/// Get key data. Querying this function is fast (it returns a
 		/// reference to a cached <c>ProtectedBinary</c> object).
 		/// If no key data is available, <c>null</c> is returned.
 		/// </summary>
-		public ProtectedBinary KeyData
+		public ProtectedBinary KeyData(PwDatabase pd)
 		{
-			get { return m_pbKeyData; }
+			return m_pbKeyData;
 		}
 
 		public KcpPassword(byte[] pbPasswordUtf8)

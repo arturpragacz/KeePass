@@ -33,10 +33,7 @@ namespace KeePassLib.Keys
 		/// reference to a cached <c>ProtectedBinary</c> object).
 		/// If no key data is available, <c>null</c> is returned.
 		/// </summary>
-		ProtectedBinary KeyData
-		{
-			get;
-		}
+		ProtectedBinary KeyData(PwDatabase pd);
 
 		// /// <summary>
 		// /// Clear the key and securely erase all security-critical information.
