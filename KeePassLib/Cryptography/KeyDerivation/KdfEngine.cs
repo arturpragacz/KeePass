@@ -36,6 +36,8 @@ namespace KeePassLib.Cryptography.KeyDerivation
 			get;
 		}
 
+		public abstract byte[] GetSeed(KdfParameters p);
+
 		public virtual KdfParameters GetDefaultParameters()
 		{
 			return new KdfParameters(this.Uuid);
