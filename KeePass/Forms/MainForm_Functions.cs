@@ -5220,6 +5220,12 @@ namespace KeePass.Forms
 			// pd.MasterKeyChangeForceOnce = false;
 			pd.Modified = true;
 
+			if (this.MasterKeyChanged != null)
+			{
+				MasterKeyChangedEventArgs ea = new MasterKeyChangedEventArgs(pd);
+				this.MasterKeyChanged(this, ea);
+			}
+
 			UpdateUIState(false); // Show modified state in the UI
 
 			string str = KPRes.MasterKeyChanged + MessageService.NewParagraph +
